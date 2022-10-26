@@ -43,12 +43,10 @@ export interface GetMemberResponse {
   memberCode: string;
   loyalty: {
     totalPointBalance: number;
-  }
-  logs: IMemberLogResponse[]
+  },
+  point: IPointHistoryResponse[]
 }
 
-interface IMemberLogResponse {
-  field: string;
-  beforeValue: string;
-  afterValue: string;
+interface IPointHistoryResponse {
+  point: number;
 }

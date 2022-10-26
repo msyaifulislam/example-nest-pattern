@@ -8,6 +8,7 @@ import { Member } from './modules/member/entities/member.entity';
 import { MemberLoyalty } from './modules/member/entities/member-loyalty.entity';
 import { MemberLog } from './modules/member/entities/member-log.entity';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { Point } from './modules/point/entities/point.entity';
 
 const registerModule = [
   TypeOrmModule.forRoot({
@@ -17,7 +18,7 @@ const registerModule = [
     username: 'root',
     password: 'rootpassword123!@#',
     database: 'example_app',
-    entities: [Member, MemberLoyalty, MemberLog],
+    entities: [Member, MemberLoyalty, MemberLog, Point],
     synchronize: true,
   }),
   EventEmitterModule.forRoot(),

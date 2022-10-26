@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { Point } from 'src/modules/point/entities/point.entity';
 import { CreateMemberRequest, CreateMemberResponse, GetMemberResponse, UpdateMemberRequest, UpdateMemberResponse } from '../dtos/member.dto';
-import { MemberLog } from '../entities/member-log.entity';
 import { MemberLoyalty } from '../entities/member-loyalty.entity';
 import { Member } from '../entities/member.entity';
 
@@ -44,7 +44,7 @@ export class MemberUseCase {
     }
   }
 
-  getMemberOutput(member: Member, memberLoyalty: MemberLoyalty, memberLog: MemberLog[]): GetMemberResponse {
+  getMemberOutput(member: Member, memberLoyalty: MemberLoyalty, point: Point[]): GetMemberResponse {
     return {
       email: member.email,
       fullname: member.fullname,
@@ -53,7 +53,7 @@ export class MemberUseCase {
       loyalty: {
         totalPointBalance: memberLoyalty.totalPointBalance
       },
-      logs: memberLog
+      point
     }
   }
 

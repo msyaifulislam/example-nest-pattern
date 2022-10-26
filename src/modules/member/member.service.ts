@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { forwardRef, HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
 import { MemberLog } from './entities/member-log.entity';
@@ -7,6 +7,8 @@ import { Member } from './entities/member.entity';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { MemberEventEnum } from 'src/core/events/member/member-event.enum';
 import { StoreMemberLogEvent } from '../../core/events/member/member-event.interface';
+import { PointService } from '../point/point.service';
+import { Point } from '../point/entities/point.entity';
 @Injectable()
 export class MemberService {
   constructor(
@@ -16,7 +18,9 @@ export class MemberService {
     private readonly memberLoyaltyRepo: Repository<MemberLoyalty>,
     @InjectRepository(MemberLog)
     private readonly memberLogRepo: Repository<MemberLog>,
-    private readonly eventEmitter: EventEmitter2
+    private readonly eventEmitter: EventEmitter2,
+    @Inject(forwardRef(() => PointService))
+    private readonly pointService: PointService
   ) { }
 
   async findOneMemberByAttribute(option: FindOneOptions<Member>): Promise<Member> {
@@ -80,13 +84,21 @@ export class MemberService {
     return findAfterUpdate
   }
 
-  async getMember(memberId: number): Promise<[Member, MemberLoyalty, MemberLog[]]> {
+  async getMember(memberId: number): Promise<[Member, MemberLoyalty, Point[]]> {
     const member = await this.findOneMemberByAttribute({ where: { id: memberId } })
     if (!member)
       throw new HttpException('Member not found!', HttpStatus.NOT_FOUND)
     const memberLoyalty = await this.findOneMemberLoyaltyByAttribute({ where: { memberId } })
-    const memberLog = await this.findMemberLogByAttribute({ where: { memberId } })
-    return [member, memberLoyalty, memberLog]
+    const points = await this.pointService.findPointByAttribute({ where: { memberId } })
+    return [member, memberLoyalty, points]
+  }
+
+  async addPointMember(memberId: number, point: number): Promise<[Member, MemberLoyalty]> {
+    const member = await this.findOneMemberByAttribute({ where: { id: memberId } })
+    await this.memberLoyaltyRepo.increment({ memberId }, 'totalPointBalance', point)
+    const memberLoyalty = await this.findOneMemberLoyaltyByAttribute({ where: { memberId }, order: { id: 'desc' } })
+    return [member, memberLoyalty]
+
   }
 
   @OnEvent(MemberEventEnum.MEMBER_UPDATE_MEMBERLOG)
