@@ -63,7 +63,7 @@ export class MemberService {
     const member = await this.memberRepo.save(this.memberRepo.create(input))
     const memberAudit: IAuditLog = {
       requestBody: JSON.stringify({ ...input }),
-      action: 'member.retrieve.createMember'
+      action: 'member.create.createMember'
     }
     this.eventEmitter.emit('event.auditlog', memberAudit)
     const afterCreate = await this.afterCreateMember(member.id);
@@ -77,7 +77,7 @@ export class MemberService {
     const loyalty = await this.memberLoyaltyRepo.save(this.memberLoyaltyRepo.create({ memberId, totalPointBalance: 0 }))
     const memberLoyaltyAudit: IAuditLog = {
       requestBody: JSON.stringify({ memberId, totalPointBalance: 0 }),
-      action: 'member.retrieve.createMemberLoyalty'
+      action: 'member.create.createMemberLoyalty'
     }
     this.eventEmitter.emit('event.auditlog', memberLoyaltyAudit)
     return {
