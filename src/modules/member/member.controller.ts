@@ -1,4 +1,8 @@
-import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, SetMetadata, UseInterceptors } from '@nestjs/common';
+import { METADATA_AUDITLOG } from 'src/core/constants/audit-log.constant';
+import { InsertAuditUseCaseCtx } from 'src/core/helpers/insert-ctx.helper';
+import { ResponseTransformationInterceptor } from 'src/core/interceptors/base-response.interceptor';
+import { BaseResponseSuccess } from 'src/core/interfaces/base-response.interface';
 import { CreateMemberRequest, CreateMemberResponse, GetMemberResponse, UpdateMemberRequest, UpdateMemberResponse } from './dtos/member.dto';
 import { MemberService } from './member.service';
 import { MemberUseCase } from './use-cases/member.use-case';
@@ -35,7 +39,7 @@ export class MemberController {
   async getMember(@Param('id') id: string): Promise<GetMemberResponse> {
     const getData = await this.memberService.getMember(Number(id))
     const response = this.memberUseCase.getMemberOutput(...getData)
-    return response;
+    return response
   }
 
 }

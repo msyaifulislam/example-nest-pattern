@@ -1,4 +1,5 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, SetMetadata } from '@nestjs/common';
+import { METADATA_AUDITLOG } from 'src/core/constants/audit-log.constant';
 import { AddPointMemberRequest, AddPointMemberResponse } from './dtos/point.dto';
 import { PointService } from './point.service';
 import { PointUseCase } from './use-cases/point.use-case';
@@ -11,6 +12,7 @@ export class PointController {
   ) { }
 
   @Post()
+  @SetMetadata(METADATA_AUDITLOG, 'point.add')
   async addPointMember(@Body() body: AddPointMemberRequest): Promise<AddPointMemberResponse> {
     const addPointUsecase = await this.pointUseCase.addPointInput(body);
     const [member, memberLoyalty] = await this.pointService.addPointMember(addPointUsecase)

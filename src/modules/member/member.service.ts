@@ -1,4 +1,4 @@
-import { forwardRef, HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, forwardRef, HttpException, HttpStatus, Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
 import { MemberLog } from './entities/member-log.entity';
@@ -9,8 +9,14 @@ import { MemberEventEnum } from 'src/core/events/member/member-event.enum';
 import { StoreMemberLogEvent } from '../../core/events/member/member-event.interface';
 import { PointService } from '../point/point.service';
 import { Point } from '../point/entities/point.entity';
+import { } from 'nest-winston';
+import { AuditServiceLogCtx, IAuditServiceLog } from 'src/core/constants/audit-log.constant';
+import { RequestContext } from '@medibloc/nestjs-request-context';
+import { InsertAuditServiceResponseCtx } from 'src/core/helpers/insert-ctx.helper';
+import { IAuditLog } from 'src/core/interfaces/audit-log.interface';
 @Injectable()
 export class MemberService {
+  private readonly logger = new Logger(MemberService.name)
   constructor(
     @InjectRepository(Member)
     private readonly memberRepo: Repository<Member>,
@@ -51,9 +57,15 @@ export class MemberService {
       ]
     })
     if (validate) {
+      // this.logger.error('Phone number or email already exist')
       throw new HttpException('Phone number or email already exist', HttpStatus.BAD_REQUEST)
     }
     const member = await this.memberRepo.save(this.memberRepo.create(input))
+    const memberAudit: IAuditLog = {
+      requestBody: JSON.stringify({ ...input }),
+      action: 'member.retrieve.createMember'
+    }
+    this.eventEmitter.emit('event.auditlog', memberAudit)
     const afterCreate = await this.afterCreateMember(member.id);
     return {
       member,
@@ -63,6 +75,11 @@ export class MemberService {
 
   async afterCreateMember(memberId: number): Promise<{ loyalty: MemberLoyalty }> {
     const loyalty = await this.memberLoyaltyRepo.save(this.memberLoyaltyRepo.create({ memberId, totalPointBalance: 0 }))
+    const memberLoyaltyAudit: IAuditLog = {
+      requestBody: JSON.stringify({ memberId, totalPointBalance: 0 }),
+      action: 'member.retrieve.createMemberLoyalty'
+    }
+    this.eventEmitter.emit('event.auditlog', memberLoyaltyAudit)
     return {
       loyalty
     }
@@ -88,8 +105,25 @@ export class MemberService {
     const member = await this.findOneMemberByAttribute({ where: { id: memberId } })
     if (!member)
       throw new HttpException('Member not found!', HttpStatus.NOT_FOUND)
+
+    const memberAudit: IAuditLog = {
+      requestBody: JSON.stringify({ memberId }),
+      action: 'member.retrieve.getMember'
+    }
+    this.eventEmitter.emit('event.auditlog', memberAudit)
+
     const memberLoyalty = await this.findOneMemberLoyaltyByAttribute({ where: { memberId } })
+    const memberLoyaltyAudit: IAuditLog = {
+      requestBody: JSON.stringify({ memberId }),
+      action: 'member.retrieve.getMemberLoyalty'
+    }
+    this.eventEmitter.emit('event.auditlog', memberLoyaltyAudit)
     const points = await this.pointService.findPointByAttribute({ where: { memberId } })
+    const pointAudit: IAuditLog = {
+      requestBody: JSON.stringify({ memberId }),
+      action: 'member.retrieve.getPoint'
+    }
+    this.eventEmitter.emit('event.auditlog', pointAudit)
     return [member, memberLoyalty, points]
   }
 
