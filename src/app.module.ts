@@ -15,6 +15,8 @@ import { AuditLogInterceptor } from './core/interceptors/audit-log.interceptor';
 import { RequestContextModule } from '@medibloc/nestjs-request-context';
 import { AuditServiceLogCtx } from './core/constants/audit-log.constant';
 import { AuditLogModule } from './core/audit-log/audit-log.module';
+import { MemberSubscriber } from './modules/member/subscribers/member.subscriber';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 
 const registerModule = [
   TypeOrmModule.forRoot({
@@ -24,28 +26,40 @@ const registerModule = [
     username: 'root',
     password: 'rootpassword123!@#',
     database: 'example_app',
+    // entities: [__dirname + "/../src/modules/**/*.entity.ts"],
     entities: [Member, MemberLoyalty, MemberLog, Point],
     synchronize: true,
+    logging: true,
+    cache: {
+      type: 'redis',
+      options: {
+        host: 'localhost',
+        port: 6379,
+      },
+    },
+    subscribers: [MemberSubscriber],
   }),
   EventEmitterModule.forRoot(),
   MongooseModule.forRoot('mongodb://localhost/example-app'),
   RequestContextModule.forRoot({
     contextClass: AuditServiceLogCtx,
-    isGlobal: true
+    isGlobal: true,
   }),
-]
-
+  ClientsModule.register([
+    {
+      name: 'REDIS-TRANSPORT',
+      transport: Transport.REDIS,
+      options: {
+        host: 'localhost',
+        port: 6379,
+      },
+    },
+  ]),
+];
 
 @Module({
-  imports: [
-    ...registerModule,
-    MemberModule,
-    PointModule,
-    AuditLogModule
-  ],
+  imports: [...registerModule, MemberModule, PointModule, AuditLogModule],
   controllers: [AppController],
-  providers: [
-    AppService
-  ],
+  providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

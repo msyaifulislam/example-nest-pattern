@@ -1,4 +1,4 @@
-import { IsEmail, IsPhoneNumber, IsString } from "class-validator";
+import { IsEmail, IsPhoneNumber, IsString } from 'class-validator';
 
 export class CreateMemberRequest {
   @IsString()
@@ -21,7 +21,7 @@ export interface CreateMemberResponse {
   memberCode: string;
   loyalty: {
     totalPointBalance: number;
-  }
+  };
 }
 
 export class UpdateMemberRequest {
@@ -43,8 +43,9 @@ export interface GetMemberResponse {
   memberCode: string;
   loyalty: {
     totalPointBalance: number;
-  },
-  point: IPointHistoryResponse[]
+  };
+  point: IPointHistoryResponse[];
+  coffee: any;
 }
 
 interface IPointHistoryResponse {
