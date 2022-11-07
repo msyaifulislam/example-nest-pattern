@@ -11,7 +11,7 @@ export class AuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const ctx: AuthUser = RequestContext.get();
     ctx.admin = 'super.admin@member.id'; // disini masih hardcode untuk admin nya
-    ctx.ip = request.ip
+    ctx.ip = request.ip;
     return true;
   }
 }

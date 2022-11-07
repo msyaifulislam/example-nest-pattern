@@ -16,8 +16,8 @@ export class AuditLog {
   date?: Date;
 
   @Prop({ required: false })
-  requestBody?: string
+  requestBody?: string;
 }
 
-export type AuditLogDocument = AuditLog & Document
-export const AuditLogSchema = SchemaFactory.createForClass(AuditLog)
+export type AuditLogDocument = AuditLog & Document;
+export const AuditLogSchema = SchemaFactory.createForClass(AuditLog);

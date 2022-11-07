@@ -3,5 +3,5 @@ export interface IAuditLog {
   action?: string;
   ip?: string;
   date?: Date;
-  requestBody?: string
+  requestBody?: string;
 }
