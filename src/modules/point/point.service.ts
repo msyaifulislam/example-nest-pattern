@@ -62,6 +62,7 @@ export class PointService {
           memberId: input.memberId,
         },
       };
+
       const testCallRedis = this.client.send(
         ICreateCoffee.pattern,
         ICreateCoffee,
